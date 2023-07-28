@@ -18,3 +18,12 @@
 - rerun the model with these, or consider alternative models
 - expand your presentation – perhaps include more impressive visuals
 - do further background reading to improve your understanding of the data
+
+# Useful links
+Trello board: https://trello.com/invite/b/t28LcStz/ATTIa9253884ed88829cf8c54d13d7bb910c893D98C1/group10-technical-challenge
+
+Extensive overview of ML with Caret: https://www.machinelearningplus.com/machine-learning/caret-package/#:~:text=Caret%20Package%20is%20a%20comprehensive%20framework%20for%20building,the%20optimal%20model%20in%20the%20shortest%20possible%20time.
+
+Feature selection with Caret: https://machinelearningmastery.com/feature-selection-with-the-caret-r-package/
+
+ML Ensembles: https://machinelearningmastery.com/machine-learning-ensembles-with-r/
