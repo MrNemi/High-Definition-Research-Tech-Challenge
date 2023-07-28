@@ -13,8 +13,8 @@
 
 6. Prepare into a simple slide deck and practice timed delivery.
 
-7. If you accomplish the above quicker than expected you can go back over to
-o clean and incorporate some of the omitted fields
-o rerun the model with these, or consider alternative models
-o expand your presentation – perhaps include more impressive visuals
-o do further background reading to improve your understanding of the data
+7. If you accomplish the above quicker than expected you can go back over to:
+- clean and incorporate some of the omitted fields
+- rerun the model with these, or consider alternative models
+- expand your presentation – perhaps include more impressive visuals
+- do further background reading to improve your understanding of the data
