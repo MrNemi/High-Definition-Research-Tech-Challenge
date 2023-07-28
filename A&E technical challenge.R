@@ -10,14 +10,13 @@ library(caret)
 library(caTools)
 library(dplyr)
 library(skimr)
-library('ggplot2', 'ggcorrplot')
 
 
 #A. Import all relevant files & read into dataframes
 #download.file(url = "",destfile = "*.csv")
-file_path <- "C:\\Users\\SUGAR69er\\Downloads\\bip-ae-technical-challenge\\training_set.csv"
+file_path <- " "
 train_data <- read.csv(file_path)
-test_path <- "C:\\Users\\eo375\\Downloads\\bip-ae-technical-challenge\\test_set.csv"
+test_path <- " "
 test_data <- read.csv(test_path)
 
 
