@@ -9,14 +9,13 @@ library(tidyverse)
 library(caret)
 library(caTools)
 library(dplyr)
-library(skimr)
 
 
 #A. Import all relevant files & read into dataframes
 #download.file(url = "",destfile = "*.csv")
-file_path <- " "
+file_path <- "C:\\Users\\SUGAR69er\\Downloads\\bip-ae-technical-challenge\\training_set.csv"
 train_data <- read.csv(file_path)
-test_path <- " "
+test_path <- "C:\\Users\\SUGAR69er\\Downloads\\bip-ae-technical-challenge\\test_set.csv"
 test_data <- read.csv(test_path)
 
 
