@@ -13,9 +13,9 @@ library(dplyr)
 
 #A. Import all relevant files & read into dataframes
 #download.file(url = "",destfile = "*.csv")
-file_path <- "C:\\Users\\SUGAR69er\\Downloads\\bip-ae-technical-challenge\\training_set.csv"
+file_path <- "bip-ae-technical-challenge/training_set.csv"
 train_data <- read.csv(file_path)
-test_path <- "C:\\Users\\SUGAR69er\\Downloads\\bip-ae-technical-challenge\\test_set.csv"
+test_path <- "bip-ae-technical-challenge/test_set.csv"
 test_data <- read.csv(test_path)
 
 
