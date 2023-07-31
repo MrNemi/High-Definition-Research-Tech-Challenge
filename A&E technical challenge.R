@@ -13,9 +13,9 @@ library(dplyr)
 
 #A. Import all relevant files & read into dataframes
 #download.file(url = "",destfile = "*.csv")
-file_path <- "bip-ae-technical-challenge/training_set.csv"
+file_path <- "bip-ae-technical-challenge//training_set.csv"
 train_data <- read.csv(file_path)
-test_path <- "bip-ae-technical-challenge/test_set.csv"
+test_path <- "bip-ae-technical-challenge//test_set.csv"
 test_data <- read.csv(test_path)
 
 
@@ -57,7 +57,7 @@ ggplot(train_data, aes(x = Admitted_Flag)) +
 num_col = train_data %>% select(where(is.numeric))
 summary(num_col)
 # Display the correlation matrix as a heatmap
-ggcorrplot::ggcorrplot(cor(num_col))
+
 
 
 
