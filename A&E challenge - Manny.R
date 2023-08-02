@@ -95,8 +95,11 @@ thresh = 0.5    # Define threshold for NA values
 #Identify columns in training set with more than 50% NA
 colnames(train[which(colMeans(is.na(train)) > thresh)])
 
+#convert NA values in Sex column to zero
+train$Sex[is.na(train$Sex)] <- 0
+
 # drop columns with more than 50% NA
-train <- train[, which(colMeans(!is.na(train)) > thresh)]
+#train <- train[, which(colMeans(!is.na(train)) > thresh)]
 
 # data imputation for missing values
 
