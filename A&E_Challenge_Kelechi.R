@@ -191,10 +191,20 @@ sum(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 # Say goodbye to 10285 rows with NA values. rip.
 train <- train[complete.cases(train[, -which(names(train) == "Admitted_Flag")]), ]
 
+# Sample a quarter of the data
+sample_size <- nrow(train) * 0.05
+train_subset <- train %>% sample_n(sample_size)
+
 
 ctrl <- rfeControl(functions = rfFuncs, method = "cv", number = 10)
-result <- rfe(train[, -which(names(train) == "Admitted_Flag")], train$Admitted_Flag, sizes=c(1:ncol(train)-1), rfeControl=ctrl)
-print(result)
+results <- rfe(train_subset[, -which(names(train_subset) == "Admitted_Flag")], 
+               train_subset$Admitted_Flag, 
+               sizes=c(1:ncol(train_subset)-1), 
+               rfeControl=ctrl)
+print(results)
+
+# The top 5 variables (out of 8):
+#    AE_Time_Mins, AE_Num_Investigations, AE_Arrival_Mode, Age_Band, AE_HRG_Nothing
 
 
 #E. Evaluate ML algorithms
