@@ -27,6 +27,7 @@ dim(test_data)
 # Summary statistics
 str(train_data)
 summary(train_data)
+sample(train_data)
 
 # Visualize variable distributions
 # Histogram for numeric variables
@@ -52,13 +53,12 @@ ggplot(train_data, aes(x = Admitted_Flag)) +
 
 
 ## Correlation between variables
-
 # Correlation matrix for numeric columns
-num_col = train_data %>% select(where(is.numeric))
+num_col <- train_data %>% select(where(is.numeric))
 summary(num_col)
-# Display the correlation matrix as a heatmap
-
-
+# Display the correlation matrix as a heat map
+cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
+corrplot(cor_matrix, method = "color")
 
 
 #Task 2. Create a validation dataset
@@ -66,17 +66,17 @@ summary(num_col)
 set.seed(100)
 
 # dividing the dataset into an 80:20 ratio
-spl = createDataPartition(train_data$Admitted_Flag, p=0.8, list=FALSE)
+spl <- createDataPartition(train_data$Admitted_Flag, p = 0.8, list = FALSE)
 
 # selecting part of dataset which belongs to the 80%
-train = train_data[spl,]
+train <- train_data[spl, ]
 
 # selecting part of dataset which belongs to the 20%
-test = train_data[-spl,]
+test <- train_data[-spl, ]
 
 # Store X and Y for later use.
-x = train %>% select(-Admitted_Flag)
-y = train$Admitted_Flag
+x <- train %>% select(-Admitted_Flag)
+y <- train$Admitted_Flag
 str(x)
 str(y)
 
@@ -85,43 +85,69 @@ skimmed <- skim(train)
 skimmed
 
 
-#B. Preprocess the training data
+#Task 3. Preprocess the training data
 # Count missing values in the training set
 sum(is.na(train))
 
 # Remove columns with excessive number of NA values
-thresh = 0.5    # Define threshold for NA values
+thresh <- 0.5    # Define threshold for NA values
 
-#Identify columns in training set with more than 50% NA
+#Identify columns with more than 50% NA
 colnames(train[which(colMeans(is.na(train)) > thresh)])
 
-# drop columns with more than 50% NA
-train <- train[, which(colMeans(!is.na(train)) > thresh)]
+# Data imputation for missing values
+# Set any null values in the 'Sex' column of train to 0
+train$Sex[is.na(train$Sex)] <- 0
 
-# data imputation for missing values
+# Set any null values in the 'Provider_Patient_Distance_Miles' 
+# column of train to the mean of the column
+train$Provider_Patient_Distance_Miles[is.na(train$Provider_Patient_Distance_Miles)] <- mean(train$Provider_Patient_Distance_Miles, na.rm = TRUE)
+test$Provider_Patient_Distance_Miles[is.na(test$Provider_Patient_Distance_Miles)] <- mean(test$Provider_Patient_Distance_Miles, na.rm = TRUE)
+
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+train$IMD_Decile_From_LSOA[is.na(train$IMD_Decile_From_LSOA)] <- 5
+test$IMD_Decile_From_LSOA[is.na(test$IMD_Decile_From_LSOA)] <- 5
+
+# # Set any null values of 'ICD10_Chapter_Code' to 'OTHER''
+train$ICD10_Chapter_Code[is.na(train$ICD10_Chapter_Code)] <- "OTHER"
+test$ICD10_Chapter_Code[is.na(test$ICD10_Chapter_Code)] <- "OTHER"
+
+# Replace 'NA' in "EA_HRG" with the value "Nothing"
+train$AE_HRG[is.na(train$AE_HRG)] <- "Nothing"
+test$AE_HRG[is.na(test$AE_HRG)] <- "Nothing"
+
+# # Set any null values of 'Treatment_Function_Code' to 'OTHER''
+train$Treatment_Function_Code[is.na(train$Treatment_Function_Code)] <- "OTHER"
+test$Treatment_Function_Code[is.na(test$Treatment_Function_Code)] <- "OTHER"
+
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+train$IMD_Decile_From_LSOA[is.na(train$IMD_Decile_From_LSOA)] <- 5
+test$IMD_Decile_From_LSOA[is.na(test$IMD_Decile_From_LSOA)] <- 5
+
+# Set any null values of 'Length_Of_Stay_Days' to a random integer between 1-45
+train$Length_Of_Stay_Days[is.na(train$Length_Of_Stay_Days)] <- sample(1:45, sum(is.na(train$Length_Of_Stay_Days)), replace=TRUE)
+test$Length_Of_Stay_Days[is.na(test$Length_Of_Stay_Days)] <- sample(1:45, sum(is.na(test$Length_Of_Stay_Days)), replace=TRUE)
 
 
-# create One-Hot Encoding(dummy variables)
+# create One-Hot Encoding(dummy variables) and 
+# ordinal encoding for categorical variables
 
+# Normalize age & datetime fields
 
-# Normalize data formats
-
-
-
-#C. Reanalyse the new training set
+#Task 4. Re-analyse the new training set
 # Summary Statistics
-#str(train)
+str(train)
 
 # Missing values analysis
 # Check missing values after data imputation
 sum(is.na(train))
 colSums(is.na(train))
 
-# Visualize importance of variables using featurePlot()
+# Estimate variable importance
 
-
-# Feature selection using recursive feature elimination(rfe)
-
+# Feature selection
+# Check for NA values in the predictors
+sum(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 
 #E. Evaluate ML algorithms
 #1. Build models
