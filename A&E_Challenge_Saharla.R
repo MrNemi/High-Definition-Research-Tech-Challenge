@@ -52,6 +52,9 @@ ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag') +
 
 # Remove columns that do not possess predictive power.
 
+clean_training_set <- training_set %>% select(Admitted_Flag,AE_Num_Investigations,
+                                              AE_Time_Mins, AE_Arrival_Mode,
+                                              AE_HRG)
 
 
 # Forming a correlation matrix
