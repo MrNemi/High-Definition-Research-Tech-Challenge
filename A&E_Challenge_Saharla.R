@@ -51,8 +51,6 @@ glimpse(training_set)
 glimpse(test_set)
 
 
-
-
 ## Data Visualization in R
 # seperate data into numeric to form graphs
 
