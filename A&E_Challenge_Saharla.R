@@ -78,8 +78,10 @@ ppsr::visualize_correlations(df = clean_training_set) +
 
 # using correlation matrix see Arrival mode to have low correlation so also remove
 
-final_clean <- clean_training_set %>% select(AE_Arrival_Mode)
-
+final_clean <- clean_training_set %>% select(Admitted_Flag,AE_Num_Investigations,
+                                             AE_Time_Mins, AE_HRG)
+colSums(is.na(final_clean))
+view(final_clean)
 
 ## Data Visualization in R
 #see the columns of the dataset and display some portion of the data 
