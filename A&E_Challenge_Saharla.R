@@ -58,13 +58,34 @@ glimpse(test_set)
 
 # Length of stay plotted via ggplot2
 
+dfLength <- select(training_set, AE_Arrive_Date, Length_Of_Stay_Days)
+view(dfLength)
+
+dfLength1 <- na.omit(dfLength)
+view(dfLength1)
+
+
+ggplot(dfLength1, aes(x=AE_Arrive_Date, y= Length_Of_Stay_Days)) +
+  geom_bar(stat ='identity') +
+  geom_line(colour = 'lightblue') + 
+  ggtitle('How long each patient stayed in A&E per year')
 
 #  Use Age range to show which age band has highest A&E admissions
+# make sure age ranges are collated
 
 
 
 # which time has the most A&E admissions
 
+dfTime <- select(training_set, AE_Time_Mins, AE_Arrive_Date) 
+
+# change time to hours
+# also for dates
+
+ggplot(dfTime, aes(x=AE_Arrive_Date, y= AE_Time_Mins)) +
+  geom_bar(stat ='identity') +
+  geom_line(colour = 'lightgreen') + 
+  ggtitle('Which year had the longest time a patient would be in A&E')
 
 ## Forming ML Model
 # I saw where they combined both data, train & test for easier manipulation?
