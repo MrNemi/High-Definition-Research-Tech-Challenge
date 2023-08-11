@@ -28,10 +28,6 @@ View(test_set)
 training_set <- read_csv("training_set.csv")
 View(training_set)
 
-## Cleaning Data in R
-# See which columns have missing values
-colSums(is.na(training_set))
-colSums(is.na(test_set))
 
 # Visualise which data is missing
 install.packages('Amelia')
@@ -41,8 +37,21 @@ missmap(training_set, y.labels = NULL, y.at = NULL, col = c("orange", "lightblue
         main = "Missing Values vs Observed")
 
 
-# Remove columns with missing values and ID columns? Don't possess predictive power.
 # Use predictive power score to form a heat map
+
+install.packages('ppsr')
+library(ppsr)
+
+ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag')
+
+## Cleaning Data in R
+# See which columns have missing values
+colSums(is.na(training_set))
+colSums(is.na(test_set))
+
+
+# Remove columns that do not possess predictive power.
+
 
 library(tidyverse)
 
