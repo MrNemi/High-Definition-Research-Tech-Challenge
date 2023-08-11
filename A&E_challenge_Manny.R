@@ -1,14 +1,27 @@
-#Code to explore A&E data and predict whether patients have been admitted.
+# Code to explore A&E data and predict whether patients have been admitted.
 
 # Install relevant packages
-#install.packages('caret','tidyverse','caTools')
-#install.packages("ggcorrplot")
+#install.packages('caret','tidyverse')
+# install.packages("ggcorrplot")
+# install.packages('caTools', repos = "http://cran.us.r-project.org")
+# install.packages("httpgd", repos = "http://cran.us.r-project.org")
+# install.packages("languageserver", repos = "http://cran.us.r-project.org")
+# install.packages('skimr', repos = "http://cran.us.r-project.org")
+# install.packages("corrplot", repos = "http://cran.us.r-project.org")
+# install.packages("fastDummies", repos = "http://cran.us.r-project.org")
+# install.packages("lubridate", repos = "http://cran.us.r-project.org")
+# install.packages("randomForest")
 
 # Load required packages
 library(tidyverse)
-library(caret)
 library(caTools)
+library(caret)
 library(dplyr)
+library(skimr)
+library(corrplot)
+library(fastDummies)
+library(lubridate)
+
 
 
 #A. Import all relevant files & read into dataframes
@@ -125,6 +138,9 @@ colSums(is.na(train))
 
 # Feature selection using recursive feature elimination(rfe)
 
+
+# The top 5 variables (out of 9):
+#   ICD10_Chapter_Code, Treatment_Function_Code, Sex, Length_Of_Stay_Days, AE_Arrival_Mode
 
 #E. Evaluate ML algorithms
 #1. Build models
