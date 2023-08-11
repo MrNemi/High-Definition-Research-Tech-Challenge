@@ -50,14 +50,20 @@ ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag') +
                 x = 'Predictive Power Score',
                 y = 'Variables')
 
+# Remove columns that do not possess predictive power.
+
+
+
+# Forming a correlation matrix
+
+ppsr::visualize_correlations(df = clean_training_set)
+
 
 ## Cleaning Data in R
 # See which columns have missing values
 colSums(is.na(training_set))
 colSums(is.na(test_set))
 
-
-# Remove columns that do not possess predictive power.
 
 
 library(tidyverse)
