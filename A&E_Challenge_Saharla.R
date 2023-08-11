@@ -29,6 +29,14 @@ training_set <- read_csv("training_set.csv")
 View(training_set)
 
 
+
+## Cleaning Data in R
+# See which columns have missing values
+
+library(tidyverse)
+colSums(is.na(training_set))
+colSums(is.na(test_set))
+
 # Visualise which data is missing
 install.packages('Amelia')
 library(Amelia)
@@ -59,25 +67,29 @@ clean_training_set <- training_set %>% select(Admitted_Flag,AE_Num_Investigation
 
 # Forming a correlation matrix
 
-ppsr::visualize_correlations(df = clean_training_set)
+
+ppsr::visualize_correlations(df = clean_training_set) +
+  ggplot2::theme_classic() +
+  ggplot2::theme(plot.background = ggplot2::element_rect(fill = "white")) +
+  ggplot2::theme(title = ggplot2::element_text(size = 10)) +
+  ggplot2::labs(title = 'Variables Correlation', 
+                x = 'Correlation Between Variables',
+                y = 'Variables')
+
+# using correlation matrix see Arrival mode to have low correlation so also remove
+
+final_clean <- clean_training_set %>% select(AE_Arrival_Mode)
 
 
-## Cleaning Data in R
-# See which columns have missing values
-colSums(is.na(training_set))
-colSums(is.na(test_set))
-
-
-
-library(tidyverse)
-
+## Data Visualization in R
 #see the columns of the dataset and display some portion of the data 
 glimpse(training_set)
 glimpse(test_set)
 
 
-## Data Visualization in R
 # seperate data into numeric to form graphs
+
+
 
 # Length of stay plotted via ggplot2
 
