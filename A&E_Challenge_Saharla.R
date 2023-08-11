@@ -42,7 +42,14 @@ missmap(training_set, y.labels = NULL, y.at = NULL, col = c("orange", "lightblue
 install.packages('ppsr')
 library(ppsr)
 
-ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag')
+ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag') +
+  ggplot2::theme_classic() +
+  ggplot2::theme(plot.background = ggplot2::element_rect(fill = "white")) +
+  ggplot2::theme(title = ggplot2::element_text(size = 10)) +
+  ggplot2::labs(title = 'Variables Predictive Power Score', 
+                x = 'Predictive Power Score',
+                y = 'Variables')
+
 
 ## Cleaning Data in R
 # See which columns have missing values
