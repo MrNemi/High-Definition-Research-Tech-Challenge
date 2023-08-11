@@ -1,7 +1,16 @@
-# Importing Data into R
+# Installing packages & opening up their libraries
+install.packages('dplyr')
+install.packages("tidyverse")
+install.packages('caret')
 
+library(dplyr)
+library(tidyverse)
+library(caret)
+
+# setting working directory
 setwd("~/bip-ae-technical-challenge")
 
+# Importing data
 library(readxl)
 Data_Dictionary <- read_excel("Data_Dictionary.xlsx")
 View(Data_Dictionary)
@@ -19,8 +28,7 @@ View(test_set)
 training_set <- read_csv("training_set.csv")
 View(training_set)
 
-# Cleaning Data in R
-
+## Cleaning Data in R
 # See which columns have missing values
 colSums(is.na(training_set))
 colSums(is.na(test_set))
@@ -45,7 +53,7 @@ glimpse(test_set)
 
 
 
-# Data Visualization in R
+## Data Visualization in R
 # seperate data into numeric to form graphs
 
 # Length of stay plotted via ggplot2
@@ -56,3 +64,43 @@ glimpse(test_set)
 
 
 # which time has the most A&E admissions
+
+
+## Forming ML Model
+# I saw where they combined both data, train & test for easier manipulation?
+# Then split into test and train after data cleaning
+
+# Add clean training set here
+
+set.seed(64)
+rows <- sample(nrow(training_set))
+shuffled_training <- training_set[rows, ]
+
+split <- round(nrow(shuffled_training)* 0.8)
+train1 <- training_set[1:split, ]
+test1 <- test_set[(split + 1):nrow(test_set), ]
+
+
+
+# Training model: Logistic regression or random forest?
+
+
+
+
+
+
+
+# After making the model, can see how accurate it is
+
+install.packages('ROCR')
+library(ROCR)
+
+
+
+
+
+# Tuning the model using cross validation
+
+
+
+
