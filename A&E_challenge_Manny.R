@@ -167,20 +167,35 @@ val <- val %>%
          Arrival_Day = day(AE_Arrive_Date))
 
 
-#C. Reanalyse the new training set
+#Task 4. Re-analyse the new training set
 # Summary Statistics
-#str(train)
+str(train)
 
 # Missing values analysis
 # Check missing values after data imputation
 sum(is.na(train))
 colSums(is.na(train))
 
-# Visualize importance of variables using featurePlot()
+# Estimate variable importance
+featurePlot(x = train[, -which(names(train) %in% "Admitted_Flag")],
+            y = train$target,
+            plot = "density",
+            scales = list(x = list(relation = "free"),
+                          y = list(relation = "free")))
 
+# Feature selection
+# Check for NA values in the predictors
+sum(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 
-# Feature selection using recursive feature elimination(rfe)
+sample_size <- nrow(train) * 0.05
+train_subset <- train %>% sample_n(sample_size)
 
+ctrl <- rfeControl(functions = rfFuncs, method = "cv", number = 10)
+results <- rfe(train_subset[, -which(names(train_subset) == "Admitted_Flag")], 
+               train_subset$Admitted_Flag, 
+               sizes=c(1:ncol(train_subset)-1), 
+               rfeControl=ctrl)
+print(results)
 
 # The top 5 variables (out of 9):
 #   ICD10_Chapter_Code, Treatment_Function_Code, Sex, Length_Of_Stay_Days, AE_Arrival_Mode
