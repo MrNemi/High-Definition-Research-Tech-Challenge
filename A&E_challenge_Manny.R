@@ -70,8 +70,8 @@ ggplot(train_data, aes(x = Admitted_Flag)) +
 num_col = train_data %>% select(where(is.numeric))
 summary(num_col)
 # Display the correlation matrix as a heatmap
-
-
+cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
+corrplot(cor_matrix, method = "color")
 
 
 #Task 2. Create a validation dataset
@@ -85,7 +85,7 @@ spl = createDataPartition(train_data$Admitted_Flag, p=0.8, list=FALSE)
 train = train_data[spl,]
 
 # selecting part of dataset which belongs to the 20%
-test = train_data[-spl,]
+val = train_data[-spl,]
 
 # Store X and Y for later use.
 x = train %>% select(-Admitted_Flag)
@@ -98,30 +98,73 @@ skimmed <- skim(train)
 skimmed
 
 
-#B. Preprocess the training data
+# Task 3. Preprocess the training data
 # Count missing values in the training set
 sum(is.na(train))
-
 # Remove columns with excessive number of NA values
-thresh = 0.5    # Define threshold for NA values
-
-#Identify columns in training set with more than 50% NA
+thresh <- 0.5    # Define threshold for NA values
+#Identify columns with more than 50% NA
 colnames(train[which(colMeans(is.na(train)) > thresh)])
-
-#convert NA values in Sex column to zero
+# Set any null values in the 'Sex' column of train to 0
 train$Sex[is.na(train$Sex)] <- 0
 
-# drop columns with more than 50% NA
-#train <- train[, which(colMeans(!is.na(train)) > thresh)]
+# Set any null values in the 'Provider_Patient_Distance_Miles' 
+# column of train to the mean of the column
+train$Provider_Patient_Distance_Miles[is.na(train$Provider_Patient_Distance_Miles)] <- mean(train$Provider_Patient_Distance_Miles, na.rm = TRUE)
+val$Provider_Patient_Distance_Miles[is.na(val$Provider_Patient_Distance_Miles)] <- mean(val$Provider_Patient_Distance_Miles, na.rm = TRUE)
 
-# data imputation for missing values
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+train$IMD_Decile_From_LSOA[is.na(train$IMD_Decile_From_LSOA)] <- 5
+val$IMD_Decile_From_LSOA[is.na(val$IMD_Decile_From_LSOA)] <- 5
 
+# # Set any null values of 'ICD10_Chapter_Code' to 'OTHER''
+train$ICD10_Chapter_Code[is.na(train$ICD10_Chapter_Code)] <- "OTHER"
+val$ICD10_Chapter_Code[is.na(val$ICD10_Chapter_Code)] <- "OTHER"
 
-# create One-Hot Encoding(dummy variables)
+# Replace 'NA' in "EA_HRG" with the value "Nothing"
+train$AE_HRG[is.na(train$AE_HRG)] <- "Nothing"
+val$AE_HRG[is.na(val$AE_HRG)] <- "Nothing"
 
+# # Set any null values of 'Treatment_Function_Code' to 'OTHER''
+train$Treatment_Function_Code[is.na(train$Treatment_Function_Code)] <- "OTHER"
+val$Treatment_Function_Code[is.na(val$Treatment_Function_Code)] <- "OTHER"
 
-# Normalize data formats
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+train$IMD_Decile_From_LSOA[is.na(train$IMD_Decile_From_LSOA)] <- 5
+val$IMD_Decile_From_LSOA[is.na(val$IMD_Decile_From_LSOA)] <- 5
 
+# Set any null values of 'Length_Of_Stay_Days' to a random integer between 1-45
+train$Length_Of_Stay_Days[is.na(train$Length_Of_Stay_Days)] <- sample(1:45, 
+                    sum(is.na(train$Length_Of_Stay_Days)), replace=TRUE)
+val$Length_Of_Stay_Days[is.na(val$Length_Of_Stay_Days)] <- sample(1:45,
+                    sum(is.na(val$Length_Of_Stay_Days)), replace=TRUE)
+
+# Drop 'AE_Arrive_HourOfDay' column
+train <- train %>% select(-AE_Arrive_HourOfDay)
+val <- val %>% select(-AE_Arrive_HourOfDay)
+
+# create One-Hot Encoding(dummy variables) and 
+# ordinal encoding for categorical variables
+train <- dummy_cols(train, select_columns = "AE_HRG",
+                    remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+val <- dummy_cols(val, select_columns = "AE_HRG",
+                  remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+# Normalize age & datetime fields
+# Convert 'AE_Arrive_Date' to datetime format
+train$AE_Arrive_Date <- as.POSIXct(train$AE_Arrive_Date)
+val$AE_Arrive_Date <- as.POSIXct(val$AE_Arrive_Date)
+
+# Extract date components
+train <- train %>%
+  mutate(Arrival_Year = year(AE_Arrive_Date),
+         Arrival_Month = month(AE_Arrive_Date),
+         Arrival_Day = day(AE_Arrive_Date))
+
+val <- val %>%
+  mutate(Arrival_Year = year(AE_Arrive_Date),
+         Arrival_Month = month(AE_Arrive_Date),
+         Arrival_Day = day(AE_Arrive_Date))
 
 
 #C. Reanalyse the new training set
