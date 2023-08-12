@@ -212,12 +212,12 @@ library(randomForest)
 model4 <- randomForest(Admitted_Flag~.,data= final_clean)
 importance(model4)
 
+pred_test <- predict(model4, newdata = final_clean, type= "class")
+
+# make a confusion matrix 
+
 # Results from important() -> IncNodePurity
 # AE_Num_Investigations      5180.312
 # AE_Time_Mins               4176.912
 # meaning a higher score means that the specific feature will have a larger effect on the model that is being used to predict a certain variable
-
-
-
-
 
