@@ -158,9 +158,16 @@ summary(model3)
 
 install.packages('ROCR')
 library(ROCR)
+predict <- predict(model, newdata=subset(final_clean,select=c(2,3)), type="response")
+pr <- prediction(p, final_clean$Admitted_Flag)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
 
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
 
-
+# 0.8287476 <- a model with good predictive ability should have an AUC closer to 1 (1 is ideal) than to 0.5
 
 
 # Tuning the model using cross validation
