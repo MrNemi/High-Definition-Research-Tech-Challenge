@@ -169,11 +169,55 @@ auc
 
 # 0.8287476 <- ROC traces the percentage of true positives accurately predicted by a given logit model, a model with good predictive ability should have an AUC closer to 1 (1 is ideal) than to 0.5
 
+# Class Predictions
+pred_class <- predict(model,
+                      new_data = final_clean,
+                      type = "class")
 
-# Tuning the model using cross validation
+# Class Probabilities - ADD CLEAN TEST
+pred_proba <- predict(model,
+                      new_data = test,
+                      type = "prob")
+
+
+results <- final_clean %>%
+  select(Admitted_Flag) %>%
+  bind_cols(pred_class, pred_proba)
+
+accuracy(results, truth = y, estimate = Admitted_Flag)
+
+# The Akaike Information Criterion (AIC)
+
+
+
+# Hosmer-Lemeshow Goodness of Fit
+
+
+
+# Deviance
+
+# Add CLEAN TEST
+
+library(caret)
+confusionMatrix(final_clean$Admitted_Flag, reference = test_set, threshold = optCutOff)
+
+# Finally use cross validation
 
 
 # Training model using Random Forest
+install.packages('randomForest')
+library(randomForest)
+
+# Create Random Forest Model
+model4 <- randomForest(Admitted_Flag~.,data= final_clean)
+importance(model4)
+
+# Results from important() -> IncNodePurity
+# AE_Num_Investigations      5180.312
+# AE_Time_Mins               4176.912
+# meaning a higher score means that the specific feature will have a larger effect on the model that is being used to predict a certain variable
+
+
 
 
 
