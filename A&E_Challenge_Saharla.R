@@ -167,7 +167,7 @@ auc <- performance(pr, measure = "auc")
 auc <- auc@y.values[[1]]
 auc
 
-# 0.8287476 <- a model with good predictive ability should have an AUC closer to 1 (1 is ideal) than to 0.5
+# 0.8287476 <- ROC traces the percentage of true positives accurately predicted by a given logit model, a model with good predictive ability should have an AUC closer to 1 (1 is ideal) than to 0.5
 
 
 # Tuning the model using cross validation
