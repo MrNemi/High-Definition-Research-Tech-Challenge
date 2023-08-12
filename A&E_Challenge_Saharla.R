@@ -142,10 +142,17 @@ test1 <- test_set[(split + 1):nrow(test_set), ]
 
 # Training model: Logistic regression or random forest?
 
+model <- lm(Admitted_Flag ~., train1)
+p <- predict(model, final_clean)
+error <- p - final_clean[['Admitted_Flag']]
+sqrt(mean(error ^ 2))
 
+# SCORE = 0.4262178
 
+model3 <- glm(Admitted_Flag ~., data=training_set)
+summary(model3)
 
-
+# Fisher’s Scoring Algorithm needed one iterations to perform the fit.
 
 
 # After making the model, can see how accurate it is
