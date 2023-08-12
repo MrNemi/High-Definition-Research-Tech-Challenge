@@ -140,7 +140,7 @@ test1 <- test_set[(split + 1):nrow(test_set), ]
 
 
 
-# Training model: Logistic regression or random forest?
+# Training model: Logistic regression 
 
 model <- lm(Admitted_Flag ~., train1)
 p <- predict(model, final_clean)
@@ -172,6 +172,8 @@ auc
 
 # Tuning the model using cross validation
 
+
+# Training model using Random Forest
 
 
 
