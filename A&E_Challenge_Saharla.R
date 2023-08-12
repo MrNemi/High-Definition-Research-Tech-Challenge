@@ -154,7 +154,6 @@ summary(model3)
 
 # Fisher’s Scoring Algorithm needed one iterations to perform the fit.
 
-
 # After making the model, can see how accurate it is
 
 install.packages('ROCR')
