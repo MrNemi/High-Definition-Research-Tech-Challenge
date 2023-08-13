@@ -234,22 +234,22 @@ split1 <- sample.split(final_clean, SplitRatio = 0.7)
 split1
 
 
-# Training model: 1) Logistic regression 
+# Training model: First model Logistic regression 
 
 model <- lm(Admitted_Flag ~ ., final_clean[1:6],)
 p <- predict(model, testZ)
 error <- p - final_clean[['Admitted_Flag']]
-sqrt(mean(error ^ 2))
-
-model2 <- glm(Admitted_Flag ~., data=final_clean)
+RMSE <- sqrt(mean(error ^ 2))
+RMSE
 summary(model)
 
 view(final_clean)
 
-# SCORE = 0.7005988
+# SCORE  0.6951394
 
 model2 <- glm(Admitted_Flag ~., data=final_clean)
 summary(model2)
+
 
 # or  linear regression (want to predict y)
 model3 <- lm(Admitted_Flag ~ ., train3,)
@@ -265,7 +265,7 @@ pred
 pairs(data.matrix(test3))
 plot(test3,type = 'l', lty = 1.8, col = 'red')
 
-
+# second model
 
 # Fisher’s Scoring Algorithm needed two iterations to perform the fit.
 
