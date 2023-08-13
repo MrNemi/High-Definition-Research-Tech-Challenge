@@ -286,22 +286,13 @@ accuracy(results, truth = y, estimate = Admitted_Flag)
 # compare accuracy of models
 dotplot(results)
 
-# The Akaike Information Criterion (AIC)
-
-
-
-# Hosmer-Lemeshow Goodness of Fit
-
-
-
-# Deviance
-
-# Add CLEAN TEST
+# Confusion Matrix to show how many prediction are correct and incorrect per class.
 
 library(caret)
 confusionMatrix(final_clean$Admitted_Flag, reference = test_set, threshold = optCutOff)
 
 # Finally use cross validation
+
 
 
 # Training model using Random Forest
