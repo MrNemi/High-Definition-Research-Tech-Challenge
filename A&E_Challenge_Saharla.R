@@ -151,12 +151,6 @@ ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag') +
                 x = 'Predictive Power Score',
                 y = 'Variables')
 
-# Remove columns that do not possess predictive power.
-
-clean_training_set <- training_set %>% select(Admitted_Flag,AE_Num_Investigations,
-                                              AE_Time_Mins, AE_Arrival_Mode,
-                                              AE_HRG)
-
 # Forming a correlation matrix
 
 
@@ -168,10 +162,12 @@ ppsr::visualize_correlations(df = clean_training_set) +
                 x = 'Correlation Between Variables',
                 y = 'Variables')
 
-# using correlation matrix see Arrival mode to have low correlation so also remove
 
-final_clean <- clean_training_set %>% select(Admitted_Flag,AE_Num_Investigations,
-                                             AE_Time_Mins)
+# final clean training set here using PPS score
+
+final_clean <- trainZ %>% select(Admitted_Flag, ICD10_Chapter_Code, Length_Of_Stay_Days,
+                                      AE_Num_Investigations, AE_Time_Mins)
+
 colSums(is.na(final_clean))
 view(final_clean)
 
