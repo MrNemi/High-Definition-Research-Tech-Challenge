@@ -227,8 +227,14 @@ trainR <- final_clean[1:split, ]
 
 view(trainR)
 
+# splitting data to train with
 
-# Training model: Logistic regression 
+set.seed(2)
+split1 <- sample.split(final_clean, SplitRatio = 0.7)
+split1
+
+
+# Training model: 1) Logistic regression 
 
 model <- lm(Admitted_Flag ~ ., final_clean[1:6],)
 p <- predict(model, testZ)
@@ -244,6 +250,22 @@ view(final_clean)
 
 model2 <- glm(Admitted_Flag ~., data=final_clean)
 summary(model2)
+
+# or  linear regression (want to predict y)
+model3 <- lm(Admitted_Flag ~ ., train3,)
+summary(model3)
+
+# 3 stars = good
+# Prediction
+
+pred <- predict(model3, test3)
+pred
+
+# comparing predicted vs actual values
+pairs(data.matrix(test3))
+plot(test3,type = 'l', lty = 1.8, col = 'red')
+
+
 
 # Fisher’s Scoring Algorithm needed two iterations to perform the fit.
 
