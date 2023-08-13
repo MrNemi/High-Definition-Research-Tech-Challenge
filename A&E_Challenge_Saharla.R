@@ -96,23 +96,47 @@ View(testZ)
 colSums(is.na(trainZ))
 colSums(is.na(testZ))
 
+# add admitted_flag column to test set
 
-# Replace NA's in test & training set with 0
+testZ$Admitted_Flag <- NA
+view(testZ)
+
+
+# Replace Na's in test set with 0
 
 testZ$Provider_Patient_Distance_Miles[is.na(testZ$Provider_Patient_Distance_Miles)] <- mean(testZ$Provider_Patient_Distance_Miles, na.rm = TRUE)
 testZ$IMD_Decile_From_LSOA[is.na(testZ$IMD_Decile_From_LSOA)] <- 5
 testZ$Length_Of_Stay_Days[is.na(testZ$Length_Of_Stay_Days)] <- 0
 testZ$Admitted_Flag[is.na(testZ$Admitted_Flag)] <- 0
+testZ$ICD10_Chapter_Code[is.na(testZ$ICD10_Chapter_Code)] <- 0
+testZ$Sex[is.na(testZ$Sex)] <- 0
+testZ$Age_Band[is.na(testZ$Age_Band)] <- 0
+testZ$AE_Arrive_HourOfDay[is.na(testZ$AE_Arrive_HourOfDay)] <- 0
+testZ$Treatment_Function_Code[is.na(testZ$Treatment_Function_Code)] <- 0
+testZ$AE_HRG_Medium[is.na(testZ$AE_HRG_Medium)] <- 0
+testZ$AE_HRG_Nothing[is.na(testZ$AE_HRG_Nothing)] <- 0
+testZ$AE_HRG_Low[is.na(testZ$AE_HRG_Low)] <- 0
+
 
 view(testZ)
 colSums(is.na(testZ))
 
-trainZ$Provider_Patient_Distance_Miles[is.na(trainZ$Provider_Patient_Distance_Miles)] <- mean(trainZ$Provider_Patient_Distance_Miles, na.rm = TRUE)
+trainZ$Provider_Patient_Distance_Miles[is.na(trainZ$Provider_Patient_Distance_Miles)] <- mean(testZ$Provider_Patient_Distance_Miles, na.rm = TRUE)
 trainZ$IMD_Decile_From_LSOA[is.na(trainZ$IMD_Decile_From_LSOA)] <- 5
 trainZ$Length_Of_Stay_Days[is.na(trainZ$Length_Of_Stay_Days)] <- 0
+trainZ$ICD10_Chapter_Code[is.na(trainZ$ICD10_Chapter_Code)] <- 0
+trainZ$Sex[is.na(trainZ$Sex)] <- 0
+trainZ$Age_Band[is.na(trainZ$Age_Band)] <- 0
+trainZ$AE_Arrive_HourOfDay[is.na(trainZ$AE_Arrive_HourOfDay)] <- 0
+trainZ$Treatment_Function_Code[is.na(trainZ$Treatment_Function_Code)] <- 0
+trainZ$AE_HRG_Medium[is.na(trainZ$AE_HRG_Medium)] <- 0
+trainZ$AE_HRG_Nothing[is.na(trainZ$AE_HRG_Nothing)] <- 0
+trainZ$AE_HRG_Low[is.na(trainZ$AE_HRG_Low)] <- 0
+
 
 view(trainZ)
 colSums(is.na(trainZ))
+
 
 # Use predictive power score to form a heat map
 
