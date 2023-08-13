@@ -49,6 +49,70 @@ missmap(training_set, y.labels = NULL, y.at = NULL, col = c("orange", "lightblue
 test_set$Admitted_Flag <- NA
 view(test_set)
 
+# One hot encoding using dummyVars in caret package
+
+install.packages("fastDummies")
+library(fastDummies)
+
+library(caret)
+age_band_levels <- c("1-17", "18-24", "25-44", "45-64", "65-84", "85")
+training_set$Age_Band <- as.integer(factor(training_set$Age_Band, levels = age_band_levels, ordered = TRUE))
+test_set$Age_Band <- as.integer(factor(test_set$Age_Band, levels = age_band_levels, ordered = TRUE))
+
+trainN <- dummy_cols(training_set, select_columns = "AE_HRG", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+testN <- dummy_cols(test_set, select_columns = "AE_HRG", remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+view(trainN)
+view(testN)
+
+# Convert to datetime format
+
+install.packages("lubridate")
+library(lubridate)
+
+trainN$AE_Arrive_Date <- as.POSIXct(trainN$AE_Arrive_Date)
+testN$AE_Arrive_Date <- as.POSIXct(testN$AE_Arrive_Date)
+
+# Extract date components
+trainQ <- trainN %>%
+  mutate(Arrival_Year = year(AE_Arrive_Date),
+         Arrival_Month = month(AE_Arrive_Date),
+         Arrival_Day = day(AE_Arrive_Date),
+         Arrival_DayOfWeek = wday(AE_Arrive_Date, label = FALSE) - 1)  # Monday=0, Sunday=6
+
+testQ <- testN %>%
+  mutate(Arrival_Year = year(AE_Arrive_Date),
+         Arrival_Month = month(AE_Arrive_Date),
+         Arrival_Day = day(AE_Arrive_Date),
+         Arrival_DayOfWeek = wday(AE_Arrive_Date, label = FALSE) - 1)  # Monday=0, Sunday=6
+
+# Drop the original 'AE_Arrive_Date' field
+trainZ <- trainQ %>% select(-AE_Arrive_Date)
+testZ <- testQ %>% select(-AE_Arrive_Date)
+
+view(trainZ)
+View(testZ)
+
+colSums(is.na(trainZ))
+colSums(is.na(testZ))
+
+
+# Replace NA's in test & training set with 0
+
+testZ$Provider_Patient_Distance_Miles[is.na(testZ$Provider_Patient_Distance_Miles)] <- mean(testZ$Provider_Patient_Distance_Miles, na.rm = TRUE)
+testZ$IMD_Decile_From_LSOA[is.na(testZ$IMD_Decile_From_LSOA)] <- 5
+testZ$Length_Of_Stay_Days[is.na(testZ$Length_Of_Stay_Days)] <- 0
+testZ$Admitted_Flag[is.na(testZ$Admitted_Flag)] <- 0
+
+view(testZ)
+colSums(is.na(testZ))
+
+trainZ$Provider_Patient_Distance_Miles[is.na(trainZ$Provider_Patient_Distance_Miles)] <- mean(trainZ$Provider_Patient_Distance_Miles, na.rm = TRUE)
+trainZ$IMD_Decile_From_LSOA[is.na(trainZ$IMD_Decile_From_LSOA)] <- 5
+trainZ$Length_Of_Stay_Days[is.na(trainZ$Length_Of_Stay_Days)] <- 0
+
+view(trainZ)
+colSums(is.na(trainZ))
 
 # Use predictive power score to form a heat map
 
