@@ -44,6 +44,11 @@ library(Amelia)
 missmap(training_set, y.labels = NULL, y.at = NULL, col = c("orange", "lightblue"), 
         main = "Missing Values vs Observed")
 
+# Add Admitted_Flag column to test set
+
+test_set$Admitted_Flag <- NA
+view(test_set)
+
 
 # Use predictive power score to form a heat map
 
@@ -63,7 +68,6 @@ ppsr::visualize_pps(df = training_set, y = 'Admitted_Flag') +
 clean_training_set <- training_set %>% select(Admitted_Flag,AE_Num_Investigations,
                                               AE_Time_Mins, AE_Arrival_Mode,
                                               AE_HRG)
-
 
 # Forming a correlation matrix
 
