@@ -283,6 +283,9 @@ results <- final_clean %>%
 
 accuracy(results, truth = y, estimate = Admitted_Flag)
 
+# compare accuracy of models
+dotplot(results)
+
 # The Akaike Information Criterion (AIC)
 
 
