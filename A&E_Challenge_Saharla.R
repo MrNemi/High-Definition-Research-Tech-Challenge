@@ -220,31 +220,36 @@ ggplot(dfTime, aes(x=AE_Arrive_Date, y= AE_Time_Mins)) +
 # I saw where they combined both data, train & test for easier manipulation?
 # Then split into test and train after data cleaning
 
-# Add clean training set here
+# Forming Validation Data set for later use
 
 set.seed(64)
-rows <- sample(nrow(training_set))
-shuffled_training <- training_set[rows, ]
+rows <- sample(nrow(final_clean))
+shuffled_training <- final_clean[rows, ]
 
 split <- round(nrow(shuffled_training)* 0.8)
-train1 <- training_set[1:split, ]
-test1 <- test_set[(split + 1):nrow(test_set), ]
+trainR <- final_clean[1:split, ]
 
+view(trainR)
 
 
 # Training model: Logistic regression 
 
-model <- lm(Admitted_Flag ~., train1)
-p <- predict(model, final_clean)
+model <- lm(Admitted_Flag ~ ., final_clean[1:6],)
+p <- predict(model, testZ)
 error <- p - final_clean[['Admitted_Flag']]
 sqrt(mean(error ^ 2))
 
-# SCORE = 0.4262178
+model2 <- glm(Admitted_Flag ~., data=final_clean)
+summary(model)
 
-model3 <- glm(Admitted_Flag ~., data=training_set)
-summary(model3)
+view(final_clean)
 
-# Fisher’s Scoring Algorithm needed one iterations to perform the fit.
+# SCORE = 0.7005988
+
+model2 <- glm(Admitted_Flag ~., data=final_clean)
+summary(model2)
+
+# Fisher’s Scoring Algorithm needed two iterations to perform the fit.
 
 # After making the model, can see how accurate it is
 
