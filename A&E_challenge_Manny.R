@@ -1,7 +1,7 @@
 # Code to explore A&E data and predict whether patients have been admitted.
 
 # Install relevant packages
-#install.packages('caret','tidyverse')
+# install.packages('caret','tidyverse')
 # install.packages("ggcorrplot")
 # install.packages('caTools', repos = "http://cran.us.r-project.org")
 # install.packages("httpgd", repos = "http://cran.us.r-project.org")
@@ -10,101 +10,79 @@
 # install.packages("corrplot", repos = "http://cran.us.r-project.org")
 # install.packages("fastDummies", repos = "http://cran.us.r-project.org")
 # install.packages("lubridate", repos = "http://cran.us.r-project.org")
-# install.packages("randomForest")
+# install.packages("randomForest", repos = "http://cran.us.r-project.org")
+# install.packages("tictoc", repos = "http://cran.us.r-project.org")
 
 # Load required packages
 library(tidyverse)
 library(caTools)
 library(caret)
 library(dplyr)
-library(skimr)
+library(skimr) # used for exploratory data analysis
 library(corrplot)
 library(fastDummies)
 library(lubridate)
-
-
+library(tictoc) # used to measure how long things take to run
 
 #A. Import all relevant files & read into dataframes
-#download.file(url = "",destfile = "*.csv")
-file_path <- "bip-ae-technical-challenge\\training_set.csv"
-train_data <- read.csv(file_path)
-test_path <- "bip-ae-technical-challenge\\test_set.csv"
-test_data <- read.csv(test_path)
+# setting working directory
+setwd("bip-ae-technical-challenge")
+train_data <- read.csv("training_set.csv")
+test_data <- read.csv("test_set.csv")
 
 
 #Task 1. Explore the datasets
-# Checking dimensions
-dim(train_data)
-dim(test_data)
-
 # Summary statistics
-str(train_data)
-summary(train_data)
+glimpse(train_data)
+#view(train_data)
 
 # Visualize variable distributions
-# Histogram for numeric variables
-num_col = train_data %>% select(where(is.numeric))
-str(num_col)
+# Split variables into numerical or categorical
+num_vars <- 
+  train_data %>% select(where(is.numeric), -Admitted_Flag)
 
-for (i in 1:ncol(num_col)) {
-  hist(num_col[[i]],
-       col = "blue", ylim = c(0, 80000))
-}
+cat_vars <- 
+  train_data %>% select(!where(is.numeric))
 
-# Bar plots for categorical variables
-var_col = train_data %>% select(!where(is.numeric))
-str(var_col)
+glimpse(num_vars)
+glimpse(cat_vars)
 
-#1. Patient Admittance
-table(train_data$Admitted_Flag)
-ggplot(train_data, aes(x = Admitted_Flag)) +
-  geom_histogram(bins=30, fill = "magenta")+
-  labs(title = "Distribution of Patient Admittance",
-       x = "Admitted_Flag",
-       y = "Number of patients")
+#for (i in 1:ncol(num_vars)) {
+#  hist(num_vars[[i]],
+#       main = paste("Histogram of", colnames(num_vars)[i]),
+#       col = "blue", ylim = c(0, 80000))
+#}
 
 
-## Correlation between variables
+#Task 2. Create validation data set
 
-# Correlation matrix for numeric columns
-num_col = train_data %>% select(where(is.numeric))
-summary(num_col)
-# Display the correlation matrix as a heatmap
-cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
-corrplot(cor_matrix, method = "color")
-
-
-#Task 2. Create a validation dataset
 # setting seed to generate a reproducible random sampling
 set.seed(100)
-
-# dividing the dataset into an 80:20 ratio
-spl = createDataPartition(train_data$Admitted_Flag, p=0.8, list=FALSE)
-
-# selecting part of dataset which belongs to the 80%
-train = train_data[spl,]
-
-# selecting part of dataset which belongs to the 20%
-val = train_data[-spl,]
+# dividing the data set into an 80:20 ratio
+spl <- createDataPartition(train_data$Admitted_Flag, p = 0.8, list = FALSE)
+# selecting part of data set which belongs to the 80% for training
+train <- train_data[spl, ]
+# selecting part of data set which belongs to the 20% for validation
+val <- train_data[-spl, ]
 
 # Store X and Y for later use.
-x = train %>% select(-Admitted_Flag)
-y = train$Admitted_Flag
-str(x)
-str(y)
+x <- train %>% select(-Admitted_Flag)
+y <- train$Admitted_Flag
 
 # overview of training data
-skimmed <- skim(train)
-skimmed
+skim(train)
 
 
-# Task 3. Preprocess the training data
+# Task 3. Pre-processing
 # Count missing values in the training set
 sum(is.na(train))
+
 # Remove columns with excessive number of NA values
 thresh <- 0.5    # Define threshold for NA values
+
 #Identify columns with more than 50% NA
 colnames(train[which(colMeans(is.na(train)) > thresh)])
+
 # Set any null values in the 'Sex' column of train to 0
 train$Sex[is.na(train$Sex)] <- 0
 
@@ -168,44 +146,71 @@ val <- val %>%
 
 
 #Task 4. Re-analyse the new training set
+
 # Summary Statistics
-str(train)
+sample(train)
 
-# Missing values analysis
-# Check missing values after data imputation
-sum(is.na(train))
-colSums(is.na(train))
+# Check for for NA values in the predictors
+colSums(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 
-# Estimate variable importance
-featurePlot(x = train[, -which(names(train) %in% "Admitted_Flag")],
-            y = train$target,
-            plot = "density",
-            scales = list(x = list(relation = "free"),
-                          y = list(relation = "free")))
+## Explore correlation between variables
+# Correlation matrix for numeric columns
+num_col <- train %>% select(where(is.numeric))
+# Display the correlation matrix as a heat map
+#cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
+#corrplot(cor_matrix, method = "color")
 
-# Feature selection
-# Check for NA values in the predictors
-sum(is.na(train[, -which(names(train) == "Admitted_Flag")]))
+# Flag any columns that have zero or near-zero variance
+nzv <- nearZeroVar(train, saveMetrics= T)
+nzv
 
-sample_size <- nrow(train) * 0.05
-train_subset <- train %>% sample_n(sample_size)
-
-ctrl <- rfeControl(functions = rfFuncs, method = "cv", number = 10)
-results <- rfe(train_subset[, -which(names(train_subset) == "Admitted_Flag")], 
-               train_subset$Admitted_Flag, 
-               sizes=c(1:ncol(train_subset)-1), 
-               rfeControl=ctrl)
-print(results)
-
-# The top 5 variables (out of 9):
-#   ICD10_Chapter_Code, Treatment_Function_Code, Sex, Length_Of_Stay_Days, AE_Arrival_Mode
 
 #E. Evaluate ML algorithms
-#1. Build models
-#2. Select best model
-#3. Compare accuracy using visualizations
-#4. Summarise best model
-#5. rank features by importance
+# Run a basic model
+# convert train to dataframe
+num_col <- data.frame(num_col)
+# convert Admitted_Flag column to a 2 level factor as outcome column.
+num_col$Admitted_Flag <- as.factor(num_col$Admitted_Flag)
+
+# Build a basic model
+# Sample a quarter of the data. Gonna test with full data 
+# to see if model accuracy improves.
+sample_size <- nrow(num_col) * 0.05
+train_subset <- num_col %>% sample_n(sample_size)
+
+# Run algorithms using 10-fold cross validation
+control <- trainControl(method="cv", number=10)
+metric <- "Accuracy"
+
+# a) linear algorithms
+set.seed(7)
+fit.lda <- train(Admitted_Flag~., data=train_subset, method="lda", metric=metric, trControl=control)
+
+# b) nonlinear algorithms
+# CART
+set.seed(7)
+fit.cart <- train(Admitted_Flag~., data=train_subset, method="rpart", metric=metric, trControl=control)
+# kNN
+set.seed(7)
+fit.knn <- train(Admitted_Flag~., data=train_subset, method="knn", metric=metric, trControl=control)
+
+# c) advanced algorithms
+# SVM
+set.seed(7)
+fit.svm <- train(Admitted_Flag~., data=train_subset, method="svmRadial", metric=metric, trControl=control)
+# Random Forest
+set.seed(7)
+fit.rf <- train(Admitted_Flag~., data=train_subset, method="rf", metric=metric, trControl=control)
+
+# summarize accuracy of models
+results <- resamples(list(lda=fit.lda, cart=fit.cart, knn=fit.knn, svm=fit.svm, rf=fit.rf))
+summary(results)
+
+# compare accuracy of models
+dotplot(results)
+
+# summarize Best Model
+print(fit.svm)
 
 
 #F. Make predictions using test data and the most accurate model.
