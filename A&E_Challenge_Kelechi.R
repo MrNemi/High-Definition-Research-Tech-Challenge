@@ -192,7 +192,7 @@ sum(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 train <- train[complete.cases(train[, -which(names(train) == "Admitted_Flag")]), ]
 
 # Sample a quarter of the data
-sample_size <- nrow(train) * 0.05
+sample_size <- nrow(train) * 0.2
 train_subset <- train %>% sample_n(sample_size)
 
 
