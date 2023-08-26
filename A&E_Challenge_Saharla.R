@@ -330,3 +330,11 @@ pred_test <- predict(model4, newdata = final_clean, type= "class")
 # AE_Time_Mins               4176.912
 # meaning a higher score means that the specific feature will have a larger effect on the model that is being used to predict a certain variable
 
+# save df and submit as answer <- when done work
+
+Admitted_Flag <- final_clean$Admitted_Flag
+output.df <- as.data.frame(Admitted_Flag)
+output.df$Admitted_Flag <- Admitted_Flag
+
+write.csv(output.df, file='Kaggle_submission.csv')
+
