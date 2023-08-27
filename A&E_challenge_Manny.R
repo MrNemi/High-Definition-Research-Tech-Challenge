@@ -12,6 +12,7 @@
 # install.packages("lubridate", repos = "http://cran.us.r-project.org")
 # install.packages("randomForest", repos = "http://cran.us.r-project.org")
 # install.packages("tictoc", repos = "http://cran.us.r-project.org")
+# install.packages("gbm")
 
 # Load required packages
 library(tidyverse)
@@ -22,21 +23,35 @@ library(skimr) # used for exploratory data analysis
 library(corrplot)
 library(fastDummies)
 library(lubridate)
+library(readxl)
+library(gbm)
+library(xgboost)
+library(data.table)
 library(tictoc) # used to measure how long things take to run
 
-#A. Import all relevant files & read into dataframes
+
+#A. Data collection and importing
 # setting working directory
-setwd("bip-ae-technical-challenge")
+setwd("C:\\Users\\eo375\\Downloads\\bip-ae-technical-challenge")
 train_data <- read.csv("training_set.csv")
 test_data <- read.csv("test_set.csv")
+skinny_set <- read.csv("skinny_unanswered_set.csv")
+answer_sheet <- read.csv("example_answer_sheet.csv")
+data_dict <- read_excel("Data_Dictionary.xlsx")
 
 
-#Task 1. Explore the datasets
+#B. Exploratory Data Analysis (EDA)
+# dimensions of dataset
+dim(train_data)
+
+# To display the first & last five rows of our data
+head(train_data)
+tail(train_data)
+
 # Summary statistics
 glimpse(train_data)
-#view(train_data)
 
-# Visualize variable distributions
+#Task 1. Visualize variable distributions
 # Split variables into numerical or categorical
 num_vars <- 
   train_data %>% select(where(is.numeric), -Admitted_Flag)
@@ -47,15 +62,8 @@ cat_vars <-
 glimpse(num_vars)
 glimpse(cat_vars)
 
-#for (i in 1:ncol(num_vars)) {
-#  hist(num_vars[[i]],
-#       main = paste("Histogram of", colnames(num_vars)[i]),
-#       col = "blue", ylim = c(0, 80000))
-#}
-
 
 #Task 2. Create validation data set
-
 # setting seed to generate a reproducible random sampling
 set.seed(100)
 # dividing the data set into an 80:20 ratio
@@ -73,8 +81,8 @@ y <- train$Admitted_Flag
 skim(train)
 
 
-# Task 3. Pre-processing
-# Count missing values in the training set
+#C. Data Pre-processing
+#Task 1. Deal with missing values in the training set
 sum(is.na(train))
 
 # Remove columns with excessive number of NA values
@@ -83,8 +91,9 @@ thresh <- 0.5    # Define threshold for NA values
 #Identify columns with more than 50% NA
 colnames(train[which(colMeans(is.na(train)) > thresh)])
 
-# Set any null values in the 'Sex' column of train to 0
+# Set any null values in the 'Sex' column to 0
 train$Sex[is.na(train$Sex)] <- 0
+val$Sex[is.na(val$Sex)] <- 0
 
 # Set any null values in the 'Provider_Patient_Distance_Miles' 
 # column of train to the mean of the column
@@ -115,20 +124,19 @@ val$IMD_Decile_From_LSOA[is.na(val$IMD_Decile_From_LSOA)] <- 5
 train$Length_Of_Stay_Days[is.na(train$Length_Of_Stay_Days)] <- sample(1:45, 
                     sum(is.na(train$Length_Of_Stay_Days)), replace=TRUE)
 val$Length_Of_Stay_Days[is.na(val$Length_Of_Stay_Days)] <- sample(1:45,
-                    sum(is.na(val$Length_Of_Stay_Days)), replace=TRUE)
+                   sum(is.na(val$Length_Of_Stay_Days)), replace=TRUE)
 
 # Drop 'AE_Arrive_HourOfDay' column
 train <- train %>% select(-AE_Arrive_HourOfDay)
 val <- val %>% select(-AE_Arrive_HourOfDay)
 
-# create One-Hot Encoding(dummy variables) and 
-# ordinal encoding for categorical variables
+#Task 2. Create One-Hot Encoding(dummy variables) for categorical variables
 train <- dummy_cols(train, select_columns = "AE_HRG",
                     remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 val <- dummy_cols(val, select_columns = "AE_HRG",
                   remove_first_dummy = TRUE, remove_selected_columns = TRUE)
 
-# Normalize age & datetime fields
+#Task 3. Normalize data fields
 # Convert 'AE_Arrive_Date' to datetime format
 train$AE_Arrive_Date <- as.POSIXct(train$AE_Arrive_Date)
 val$AE_Arrive_Date <- as.POSIXct(val$AE_Arrive_Date)
@@ -144,9 +152,7 @@ val <- val %>%
          Arrival_Month = month(AE_Arrive_Date),
          Arrival_Day = day(AE_Arrive_Date))
 
-
 #Task 4. Re-analyse the new training set
-
 # Summary Statistics
 sample(train)
 
@@ -157,66 +163,135 @@ colSums(is.na(train[, -which(names(train) == "Admitted_Flag")]))
 # Correlation matrix for numeric columns
 num_col <- train %>% select(where(is.numeric))
 # Display the correlation matrix as a heat map
-#cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
-#corrplot(cor_matrix, method = "color")
+cor_matrix <- cor(num_col, use = "pairwise.complete.obs")
+corrplot(cor_matrix, method = "color")
 
 # Flag any columns that have zero or near-zero variance
 nzv <- nearZeroVar(train, saveMetrics= T)
 nzv
 
 
-#E. Evaluate ML algorithms
+#D. Model training and Evaluation
 # Run a basic model
-# convert train to dataframe
+# convert num_col to dataframe
 num_col <- data.frame(num_col)
+
 # convert Admitted_Flag column to a 2 level factor as outcome column.
 num_col$Admitted_Flag <- as.factor(num_col$Admitted_Flag)
+val$Admitted_Flag <- as.factor(val$Admitted_Flag)
 
-# Build a basic model
-# Sample a quarter of the data. Gonna test with full data 
-# to see if model accuracy improves.
-sample_size <- nrow(num_col) * 0.05
+# Sample with varying size of the data.
+sample_size <- nrow(num_col) * 0.075
 train_subset <- num_col %>% sample_n(sample_size)
 
-# Run algorithms using 10-fold cross validation
-control <- trainControl(method="cv", number=10)
+# Run algorithms using cross validation
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+seed <- 7
 metric <- "Accuracy"
 
-# a) linear algorithms
-set.seed(7)
-fit.lda <- train(Admitted_Flag~., data=train_subset, method="lda", metric=metric, trControl=control)
-
-# b) nonlinear algorithms
-# CART
-set.seed(7)
-fit.cart <- train(Admitted_Flag~., data=train_subset, method="rpart", metric=metric, trControl=control)
-# kNN
-set.seed(7)
-fit.knn <- train(Admitted_Flag~., data=train_subset, method="knn", metric=metric, trControl=control)
-
-# c) advanced algorithms
-# SVM
-set.seed(7)
-fit.svm <- train(Admitted_Flag~., data=train_subset, method="svmRadial", metric=metric, trControl=control)
+# Train model using different algorithms
+# C5.0
+set.seed(seed)
+fit.c50 <- train(Admitted_Flag~., data=train_subset, method="C5.0",
+                 metric=metric, trControl=control)
+# Stochastic Gradient Boosting
+set.seed(seed)
+fit.gbm <- train(Admitted_Flag~., data=train_subset, method="gbm",
+                 metric=metric, trControl=control, verbose=FALSE)
+# Extreme Gradient Boosting
+set.seed(seed)
+fit.xgb <- train(Admitted_Flag~., data=train_subset, method="xgbTree",
+                 metric=metric, trControl=control, verbose=FALSE, verbosity=0)
 # Random Forest
-set.seed(7)
-fit.rf <- train(Admitted_Flag~., data=train_subset, method="rf", metric=metric, trControl=control)
-
+set.seed(seed)
+fit.rf <- train(Admitted_Flag~., data=train_subset, method="rf",
+                metric=metric, trControl=control)
+# SVM - Support Vector Machine
+set.seed(seed)
+fit.svm <- train(Admitted_Flag~., data=train_subset, method="svmRadial",
+                 metric=metric, trControl=control)
 # summarize accuracy of models
-results <- resamples(list(lda=fit.lda, cart=fit.cart, knn=fit.knn, svm=fit.svm, rf=fit.rf))
+results <- resamples(list(c5.0=fit.c50, gbm=fit.gbm,xgb=fit.xgb,
+                          rf=fit.rf, svm=fit.svm))
+# summarize results
 summary(results)
-
 # compare accuracy of models
 dotplot(results)
-
 # summarize Best Model
-print(fit.svm)
+print(fit.gbm)
+
+# estimate variable importance
+importance <- varImp(fit.rf, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+
+# Estimate skill of model on the validation dataset
+predictions <- predict(fit.gbm, val)
+confusionMatrix(as.factor(predictions), val$Admitted_Flag)
 
 
 #F. Make predictions using test data and the most accurate model.
+# Task 1. Prepare test_data and make predictions
+# Pre-processing
+test_data$Admitted_Flag <- NA
+test <- test_data
+# Deal with missing values in the test set
+sum(is.na(test))
+# Identify columns with more than 50% NA
+colnames(test[which(colMeans(is.na(test)) > thresh)])
+# Set any null values in the 'Sex' column to 0
+test$Sex[is.na(test$Sex)] <- 0
+
+# Set any null values in the 'Provider_Patient_Distance_Miles' 
+# column of train to the mean of the column
+test$Provider_Patient_Distance_Miles[is.na(test$Provider_Patient_Distance_Miles)] <- mean(test$Provider_Patient_Distance_Miles, na.rm = TRUE)
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+test$IMD_Decile_From_LSOA[is.na(test$IMD_Decile_From_LSOA)] <- 5
+
+# # Set any null values of 'ICD10_Chapter_Code' to 'OTHER''
+test$ICD10_Chapter_Code[is.na(test$ICD10_Chapter_Code)] <- "OTHER"
+# Replace 'NA' in "EA_HRG" with the value "Nothing"
+test$AE_HRG[is.na(test$AE_HRG)] <- "Nothing"
+# # Set any null values of 'Treatment_Function_Code' to 'OTHER''
+test$Treatment_Function_Code[is.na(test$Treatment_Function_Code)] <- "OTHER"
+
+# Set any null values in the 'IMD_Decile_From_LSOA' column to 5
+test$IMD_Decile_From_LSOA[is.na(test$IMD_Decile_From_LSOA)] <- 5
+# Set any null values of 'Length_Of_Stay_Days' to a random integer between 1-45
+test$Length_Of_Stay_Days[is.na(test$Length_Of_Stay_Days)] <- sample(1:45, 
+                      sum(is.na(test$Length_Of_Stay_Days)), replace=TRUE)
+# Drop 'AE_Arrive_HourOfDay' column
+test <- test %>% select(-AE_Arrive_HourOfDay)
 
 
-#G. Create ensemble predictions for improved accuracy (Stretch goal)
-# - Bagging
-# - Boosting
-# - Stacking
+#Task 2. Create One-Hot Encoding(dummy variables) and 
+# ordinal encoding for categorical variables
+test <- dummy_cols(test, select_columns = "AE_HRG",
+                    remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+
+#Task 3. Normalize data fields
+# Convert 'AE_Arrive_Date' to datetime format
+test$AE_Arrive_Date <- as.POSIXct(test$AE_Arrive_Date)
+
+# Extract date components
+test <- test %>%
+  mutate(Arrival_Year = year(AE_Arrive_Date),
+         Arrival_Month = month(AE_Arrive_Date),
+         Arrival_Day = day(AE_Arrive_Date))
+
+str(test)
+
+# Predict on test_data
+output <- predict(fit.gbm, test)
+summary(output)
+
+# Create dataframe from predictions
+Record_ID <- test$Record_ID
+Admitted_Flag <- output
+final_answer_sheet <- data.frame(Record_ID, Admitted_Flag)
+str(final_answer_sheet)
+
+# read dataframe to csv file
+fwrite(final_answer_sheet, "C:\\Users\\eo375\\Downloads\\bip-ae-technical-challenge\\final_answer_sheet.csv")
